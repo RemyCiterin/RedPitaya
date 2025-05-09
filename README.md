@@ -45,3 +45,10 @@ cat ./red_pitaya.bit > /dev/xdevcfg
 
  with `xxxxxx` the last 6 digits of the MAC address on the Ethernet connector. The default password of the board is 
  `root`.
+
+
+ ### Node
+
+Nextpnr doesn't understand that the `[*]` symbols in `red_pitaya.xdc` means
+`[0]`, `[1]`... so you must replace all the lines containing `[*]` by new
+lines using the indexes you want to use.
