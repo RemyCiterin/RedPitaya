@@ -27,7 +27,7 @@ module red_pitaya (
 endmodule
 ```
 
-Then one can generate the bitstream using: 
+Then one can generate the bitstream using:
 
 ```bash
 nix develop github:openxc7/toolchain-nix
@@ -43,7 +43,7 @@ ssh root@rp-xxxxxx.local
 cat ./red_pitaya.bit > /dev/xdevcfg
 ```
 
- with `xxxxxx` the last 6 digits of the MAC address on the Ethernet connector. The default password of the board is 
+ with `xxxxxx` the last 6 digits of the MAC address on the Ethernet connector. The default password of the board is
  `root`.
 
 
@@ -52,3 +52,20 @@ cat ./red_pitaya.bit > /dev/xdevcfg
 Nextpnr doesn't understand that the `[*]` symbols in `red_pitaya.xdc` means
 `[0]`, `[1]`... so you must replace all the lines containing `[*]` by new
 lines using the indexes you want to use.
+
+## AXI communitation
+
+Now AXI communication is done with the CPU as a master, and the FPGA as a slave
+because I need to install the CMA linux driver. `src/Soc.bsv` contains two AXI4
+slaves (one for each core), and increment a counter at each read request from
+the CPU, and respond the value of the counter. To run this example use the same
+commands, then run:
+
+```bash
+scp test.c root@rp-xxxxxx.local:/root
+ssh root@rp-xxxxxx.local
+gcc test.c -o test && test
+```
+
+then we must see an incrementing counter in `stdout`, this is the global counter
+in the FPGA program.

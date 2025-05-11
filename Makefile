@@ -1,60 +1,48 @@
-PROJECT = red_pitaya
-FAMILY = zynq7
-PART = xc7z010clg400-1# XC7Z010-1CLG400C
-SOURCES = top.v
+SOURCES = \
+		  $(BLUESPECDIR)/Verilog/SizedFIFO.v \
+		  $(BLUESPECDIR)/Verilog/SizedFIFO0.v \
+		  $(BLUESPECDIR)/Verilog/FIFO1.v \
+		  $(BLUESPECDIR)/Verilog/FIFO2.v \
+		  $(BLUESPECDIR)/Verilog/FIFO20.v \
+		  $(BLUESPECDIR)/Verilog/FIFO10.v \
+		  $(BLUESPECDIR)/Verilog/FIFOL1.v \
+		  $(BLUESPECDIR)/Verilog/BRAM1.v \
+		  $(BLUESPECDIR)/Verilog/BRAM1BELoad.v \
+		  $(BLUESPECDIR)/Verilog/BRAM2.v \
+		  $(BLUESPECDIR)/Verilog/RevertReg.v \
+		  $(BLUESPECDIR)/Verilog/RegFile.v \
+		  $(BLUESPECDIR)/Verilog/RegFileLoad.v \
+		  top.v rtl/*
 
-#############################################################################################
-DBPART = $(shell echo ${PART} | sed -e 's/-[0-9]//g')
+include bitstream.mk
 
-TOP ?= ${PROJECT}
-TOP_MODULE ?= ${TOP}
+PACKAGES = src:BlueLib/src:BlueAXI/src:+
 
-XDC ?= red_pitaya.xdc
+BSC_FLAGS = -show-schedule -show-range-conflict -keep-fires -aggressive-conditions \
+						-check-assert -no-warn-action-shadowing -sched-dot
 
-.PHONY: all
-all: build/${PROJECT}.bit
+SYNTH_FLAGS = -bdir build -vdir rtl -simdir build \
+							-info-dir build -fdir build
 
-.PHONY: program
-program: #build/${PROJECT}.bit
-	sudo openFPGALoader --board nexysVideo --bitstream build/${PROJECT}.bit
+BSIM_FLAGS = -bdir bsim -vdir bsim -simdir bsim \
+							-info-dir bsim -fdir bsim -D BSIM -l pthread
 
-yosys:
-	yosys -q -p \
-		"synth_xilinx -flatten -abc9 -arch xc7 -top ${TOP_MODULE}; write_json build/${PROJECT}.json" \
-		${SOURCES}
 
-# The chip database only needs to be generated once
-# that is why we don't clean it with make clean
-db/${DBPART}.bin:
-	${PYPY3} ${NEXTPNR_XILINX_PYTHON_DIR}/bbaexport.py \
-		--device ${PART} --bba ${DBPART}.bba
-	bbasm -l ${DBPART}.bba db/${DBPART}.bin
-	rm -f ${DBPART}.bba
+# Generate verlog files in rtl
+compile:
+	bsc \
+		$(SYNTH_FLAGS) $(BSC_FLAGS) -cpp +RTS -K128M -RTS \
+		-p $(PACKAGES) -verilog -u -g mkSoc src/Soc.bsv
 
-build/${PROJECT}.fasm: build/${PROJECT}.json db/${DBPART}.bin ${XDC}
-	nextpnr-xilinx \
-		--router router1 --chipdb db/${DBPART}.bin --xdc ${XDC} \
-		--json build/${PROJECT}.json --fasm $@
+# Generate a new simulation file and run simulation
+sim:
+	bsc $(BSC_FLAGS) $(BSIM_FLAGS) -p $(PACKAGES) -sim -u -g mkSoc src/Soc.bsv
+	bsc $(BSC_FLAGS) $(BSIM_FLAGS) -sim -e $(BSIM_MODULE) -o \
+		bsim/bsim bsim/*.ba
+	./bsim/bsim -m 1000000000
 
-build/${PROJECT}.frames: build/${PROJECT}.fasm
-	fasm2frames --part ${PART} --db-root ${PRJXRAY_DB_DIR}/${FAMILY} \
-		build/${PROJECT}.fasm > build/${PROJECT}.frames
+# Run simulation without generating a new simulation file
+run:
+	./bsim/bsim -m 1000000000
 
-build/${PROJECT}.bit: build/${PROJECT}.frames
-	xc7frames2bit \
-		--part_file ${PRJXRAY_DB_DIR}/${FAMILY}/${PART}/part.yaml \
-		--part_name ${PART} --frm_file build/${PROJECT}.frames \
-		--output_file build/${PROJECT}.bit
 
-.PHONY: clean
-clean:
-	@rm -f build/*.bit
-	@rm -f build/*.frames
-	@rm -f build/*.fasm
-	@rm -f build/*.json
-	@rm -f build/*.bin
-	@rm -f build/*.bba
-
-.PHONY: pnrclean
-pnrclean:
-	rm build/*.fasm build/*.frames build/*.bit

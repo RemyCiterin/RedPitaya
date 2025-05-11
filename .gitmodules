@@ -1,0 +1,12 @@
+[submodule "BlueAXI"]
+	path = BlueAXI
+	url = https://github.com/esa-tu-darmstadt/BlueAXI.git
+[submodule "BlueLib"]
+	path = BlueLib
+	url = https://github.com/esa-tu-darmstadt/BlueLib.git
+[submodule "red-pitaya-notes"]
+	path = red-pitaya-notes
+	url = https://github.com/pavel-demin/red-pitaya-notes.git
+[submodule "RedPitaya-FPGA"]
+	path = RedPitaya-FPGA
+	url = https://github.com/RedPitaya/RedPitaya-FPGA.git
