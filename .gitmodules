@@ -10,3 +10,9 @@
 [submodule "RedPitaya-FPGA"]
 	path = RedPitaya-FPGA
 	url = https://github.com/RedPitaya/RedPitaya-FPGA.git
+[submodule "RedPitaya"]
+	path = RedPitaya
+	url = https://github.com/RedPitaya/RedPitaya.git
+[submodule "GenZ"]
+	path = GenZ
+	url = https://github.com/regymm/GenZ.git

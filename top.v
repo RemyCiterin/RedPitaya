@@ -2,6 +2,8 @@
 
 module red_pitaya (
   input wire [1:1] adc_clk_i,
+  input wire [15:0] adc_data0_i,
+  input wire [15:0] adc_data1_i,
   output wire[7:0] led_o
 );
 
@@ -24,6 +26,9 @@ module red_pitaya (
     RST_N <= counter > 1024 ? 1 : 0;
   end
 
+  //assign led_o =
+  //  { 0, master0_bready, master0_bvalid, master0_awready, master0_awvalid, master0_wready, master0_wvalid };
+
   wire slave1_arready;
   wire slave1_rvalid;
   wire [11:0] slave1_rid;
@@ -38,26 +43,23 @@ module red_pitaya (
   wire slave1_arvalid;
   wire [11:0] slave1_arid;
   wire [31:0] slave1_araddr;
-  wire [7:0] slave1_arlen;
+  wire [3:0] slave1_arlen;
   wire [2:0] slave1_arsize;
   wire [1:0] slave1_arburst;
-  wire slave1_arlock;
+  wire [1:0] slave1_arlock;
   wire [3:0] slave1_arcache;
   wire [2:0] slave1_arprot;
-  wire [3:0] slave1_arqos;
-  wire [3:0] slave1_arregion;
   wire slave1_rready;
   wire slave1_awvalid;
+  wire [11:0] slave1_wid;
   wire [11:0] slave1_awid;
   wire [31:0] slave1_awaddr;
-  wire [7:0] slave1_awlen;
+  wire [3:0] slave1_awlen;
   wire [2:0] slave1_awsize;
   wire [1:0] slave1_awburst;
-  wire slave1_awlock;
+  wire [1:0] slave1_awlock;
   wire [3:0] slave1_awcache;
   wire [2:0] slave1_awprot;
-  wire [3:0] slave1_awqos;
-  wire [3:0] slave1_awregion;
   wire slave1_wvalid;
   wire [31:0] slave1_wdata;
   wire [3:0] slave1_wstrb;
@@ -78,26 +80,23 @@ module red_pitaya (
   wire slave0_arvalid;
   wire [11:0] slave0_arid;
   wire [31:0] slave0_araddr;
-  wire [7:0] slave0_arlen;
+  wire [3:0] slave0_arlen;
   wire [2:0] slave0_arsize;
   wire [1:0] slave0_arburst;
-  wire slave0_arlock;
+  wire [1:0] slave0_arlock;
   wire [3:0] slave0_arcache;
   wire [2:0] slave0_arprot;
-  wire [3:0] slave0_arqos;
-  wire [3:0] slave0_arregion;
   wire slave0_rready;
   wire slave0_awvalid;
+  wire [11:0] slave0_wid;
   wire [11:0] slave0_awid;
   wire [31:0] slave0_awaddr;
-  wire [7:0] slave0_awlen;
+  wire [3:0] slave0_awlen;
   wire [2:0] slave0_awsize;
   wire [1:0] slave0_awburst;
-  wire slave0_awlock;
+  wire [1:0] slave0_awlock;
   wire [3:0] slave0_awcache;
   wire [2:0] slave0_awprot;
-  wire [3:0] slave0_awqos;
-  wire [3:0] slave0_awregion;
   wire slave0_wvalid;
   wire [31:0] slave0_wdata;
   wire [3:0] slave0_wstrb;
@@ -118,36 +117,28 @@ module red_pitaya (
   wire master0_arvalid;
   wire [2:0] master0_arid;
   wire [31:0] master0_araddr;
-  wire [7:0] master0_arlen;
+  wire [3:0] master0_arlen;
   wire [2:0] master0_arsize;
   wire [1:0] master0_arburst;
-  wire master0_arlock;
+  wire [1:0] master0_arlock;
   wire [3:0] master0_arcache;
   wire [2:0] master0_arprot;
-  wire [3:0] master0_arqos;
-  wire [3:0] master0_arregion;
   wire master0_rready;
   wire master0_awvalid;
+  wire [2:0] master0_wid;
   wire [2:0] master0_awid;
   wire [31:0] master0_awaddr;
-  wire [7:0] master0_awlen;
+  wire [3:0] master0_awlen;
   wire [2:0] master0_awsize;
   wire [1:0] master0_awburst;
-  wire master0_awlock;
+  wire [1:0] master0_awlock;
   wire [3:0] master0_awcache;
   wire [2:0] master0_awprot;
-  wire [3:0] master0_awqos;
-  wire [3:0] master0_awregion;
   wire master0_wvalid;
   wire [63:0] master0_wdata;
   wire [7:0] master0_wstrb;
   wire master0_wlast;
   wire master0_bready;
-  wire [4:0] master0_ruser;
-  wire [4:0] master0_buser;
-  wire [4:0] master0_wuser;
-  wire [4:0] master0_aruser;
-  wire [4:0] master0_awuser;
 
   mkSoc soc (
     .RST_N(RST_N),
@@ -177,11 +168,10 @@ module red_pitaya (
     .slave0_arlock     (slave0_arlock  ),
     .slave0_arcache    (slave0_arcache ),
     .slave0_arprot     (slave0_arprot  ),
-    .slave0_arqos      (slave0_arqos   ),
-    .slave0_arregion   (slave0_arregion),
     .slave0_rready     (slave0_rready  ),
     .slave0_awvalid    (slave0_awvalid ),
     .slave0_awid       (slave0_awid    ),
+    .slave0_wid        (slave0_wid     ),
     .slave0_awaddr     (slave0_awaddr  ),
     .slave0_awlen      (slave0_awlen   ),
     .slave0_awsize     (slave0_awsize  ),
@@ -189,8 +179,6 @@ module red_pitaya (
     .slave0_awlock     (slave0_awlock  ),
     .slave0_awcache    (slave0_awcache ),
     .slave0_awprot     (slave0_awprot  ),
-    .slave0_awqos      (slave0_awqos   ),
-    .slave0_awregion   (slave0_awregion),
     .slave0_wvalid     (slave0_wvalid  ),
     .slave0_wdata      (slave0_wdata   ),
     .slave0_wstrb      (slave0_wstrb   ),
@@ -217,11 +205,10 @@ module red_pitaya (
     .slave1_arlock     (slave1_arlock  ),
     .slave1_arcache    (slave1_arcache ),
     .slave1_arprot     (slave1_arprot  ),
-    .slave1_arqos      (slave1_arqos   ),
-    .slave1_arregion   (slave1_arregion),
     .slave1_rready     (slave1_rready  ),
     .slave1_awvalid    (slave1_awvalid ),
     .slave1_awid       (slave1_awid    ),
+    .slave1_wid        (slave1_wid     ),
     .slave1_awaddr     (slave1_awaddr  ),
     .slave1_awlen      (slave1_awlen   ),
     .slave1_awsize     (slave1_awsize  ),
@@ -229,8 +216,6 @@ module red_pitaya (
     .slave1_awlock     (slave1_awlock  ),
     .slave1_awcache    (slave1_awcache ),
     .slave1_awprot     (slave1_awprot  ),
-    .slave1_awqos      (slave1_awqos   ),
-    .slave1_awregion   (slave1_awregion),
     .slave1_wvalid     (slave1_wvalid  ),
     .slave1_wdata      (slave1_wdata   ),
     .slave1_wstrb      (slave1_wstrb   ),
@@ -258,11 +243,10 @@ module red_pitaya (
     .master0_arlock     (master0_arlock  ),
     .master0_arcache    (master0_arcache ),
     .master0_arprot     (master0_arprot  ),
-    .master0_arqos      (master0_arqos   ),
-    .master0_arregion   (master0_arregion),
     .master0_rready     (master0_rready  ),
     .master0_awvalid    (master0_awvalid ),
     .master0_awid       (master0_awid    ),
+    .master0_wid        (master0_wid     ),
     .master0_awaddr     (master0_awaddr  ),
     .master0_awlen      (master0_awlen   ),
     .master0_awsize     (master0_awsize  ),
@@ -270,18 +254,13 @@ module red_pitaya (
     .master0_awlock     (master0_awlock  ),
     .master0_awcache    (master0_awcache ),
     .master0_awprot     (master0_awprot  ),
-    .master0_awqos      (master0_awqos   ),
-    .master0_awregion   (master0_awregion),
     .master0_wvalid     (master0_wvalid  ),
     .master0_wdata      (master0_wdata   ),
     .master0_wstrb      (master0_wstrb   ),
     .master0_wlast      (master0_wlast   ),
     .master0_bready     (master0_bready  ),
-    .master0_ruser      (master0_ruser   ),
-    .master0_buser      (master0_buser   ),
-    .master0_aruser     (master0_aruser  ),
-    .master0_wuser      (master0_wuser   ),
-    .master0_awuser     (master0_awuser  )
+    .adc_data0          (adc_data0_i     ),
+    .adc_data1          (adc_data1_i     )
   );
 
   //PS7 zynq7 ();
@@ -413,7 +392,7 @@ module red_pitaya (
      .MAXIGP0ARLEN(slave0_arlen),
      .MAXIGP0ARLOCK(slave0_arlock),
      .MAXIGP0ARPROT(slave0_arprot),
-     .MAXIGP0ARQOS(slave0_arqos),
+     .MAXIGP0ARQOS(),
      .MAXIGP0ARSIZE(slave0_arsize),
      .MAXIGP0ARVALID(slave0_arvalid),
      .MAXIGP0AWADDR(slave0_awaddr),
@@ -423,13 +402,13 @@ module red_pitaya (
      .MAXIGP0AWLEN(slave0_awlen),
      .MAXIGP0AWLOCK(slave0_awlock),
      .MAXIGP0AWPROT(slave0_awprot),
-     .MAXIGP0AWQOS(slave0_awqos),
+     .MAXIGP0AWQOS(),
      .MAXIGP0AWSIZE(slave0_awsize),
      .MAXIGP0AWVALID(slave0_awvalid),
      .MAXIGP0BREADY(slave0_bready),
      .MAXIGP0RREADY(slave0_rready),
      .MAXIGP0WDATA(slave0_wdata),
-     .MAXIGP0WID(),
+     .MAXIGP0WID(slave0_wid),
      .MAXIGP0WLAST(slave0_wlast),
      .MAXIGP0WSTRB(slave0_wstrb),
      .MAXIGP0WVALID(slave0_wvalid),
@@ -441,7 +420,7 @@ module red_pitaya (
      .MAXIGP1ARLEN(slave1_arlen),
      .MAXIGP1ARLOCK(slave1_arlock),
      .MAXIGP1ARPROT(slave1_arprot),
-     .MAXIGP1ARQOS(slave1_arqos),
+     .MAXIGP1ARQOS(),
      .MAXIGP1ARSIZE(slave1_arsize),
      .MAXIGP1ARVALID(slave1_arvalid),
      .MAXIGP1AWADDR(slave1_awaddr),
@@ -451,28 +430,28 @@ module red_pitaya (
      .MAXIGP1AWLEN(slave1_awlen),
      .MAXIGP1AWLOCK(slave1_awlock),
      .MAXIGP1AWPROT(slave1_awprot),
-     .MAXIGP1AWQOS(slave1_awqos),
+     .MAXIGP1AWQOS(),
      .MAXIGP1AWSIZE(slave1_awsize),
      .MAXIGP1AWVALID(slave1_awvalid),
      .MAXIGP1BREADY(slave1_bready),
      .MAXIGP1RREADY(slave1_rready),
      .MAXIGP1WDATA(slave1_wdata),
-     .MAXIGP1WID(),
+     .MAXIGP1WID(slave1_wid),
      .MAXIGP1WLAST(slave1_wlast),
      .MAXIGP1WSTRB(slave1_wstrb),
      .MAXIGP1WVALID(slave1_wvalid),
      .SAXIACPARESETN(),
-     .SAXIACPARREADY(),
-     .SAXIACPAWREADY(),
-     .SAXIACPBID(),
-     .SAXIACPBRESP(),
-     .SAXIACPBVALID(),
-     .SAXIACPRDATA(),
-     .SAXIACPRID(),
-     .SAXIACPRLAST(),
-     .SAXIACPRRESP(),
-     .SAXIACPRVALID(),
-     .SAXIACPWREADY(),
+     .SAXIACPARREADY(master0_arready),
+     .SAXIACPAWREADY(master0_awready),
+     .SAXIACPBID(master0_bid),
+     .SAXIACPBRESP(master0_bresp),
+     .SAXIACPBVALID(master0_bvalid),
+     .SAXIACPRDATA(master0_rdata),
+     .SAXIACPRID(master0_rid),
+     .SAXIACPRLAST(master0_rlast),
+     .SAXIACPRRESP(master0_rresp),
+     .SAXIACPRVALID(master0_rvalid),
+     .SAXIACPWREADY(master0_wready),
      .SAXIGP0ARESETN(),
      .SAXIGP0ARREADY(),
      .SAXIGP0AWREADY(),
@@ -678,59 +657,59 @@ module red_pitaya (
      .FTMTP2FTRIGACK(),
      .IRQF2P(),
      .MAXIGP0ACLK(clk),
-     .MAXIGP0ARREADY(slave0_arready),
-     .MAXIGP0AWREADY(slave0_awready),
+     .MAXIGP0ARREADY(slave0_arready && RST_N),
+     .MAXIGP0AWREADY(slave0_awready && RST_N),
      .MAXIGP0BID(slave0_bid),
      .MAXIGP0BRESP(slave0_bresp),
-     .MAXIGP0BVALID(slave0_bvalid),
+     .MAXIGP0BVALID(slave0_bvalid && RST_N),
      .MAXIGP0RDATA(slave0_rdata),
      .MAXIGP0RID(slave0_rid),
      .MAXIGP0RLAST(slave0_rlast),
      .MAXIGP0RRESP(slave0_rresp),
-     .MAXIGP0RVALID(slave0_rvalid),
-     .MAXIGP0WREADY(slave0_wready),
+     .MAXIGP0RVALID(slave0_rvalid && RST_N),
+     .MAXIGP0WREADY(slave0_wready && RST_N),
      .MAXIGP1ACLK(clk),
-     .MAXIGP1ARREADY(slave1_arready),
-     .MAXIGP1AWREADY(slave1_awready),
+     .MAXIGP1ARREADY(slave1_arready && RST_N),
+     .MAXIGP1AWREADY(slave1_awready && RST_N),
      .MAXIGP1BID(slave1_bid),
      .MAXIGP1BRESP(slave1_bresp),
-     .MAXIGP1BVALID(slave1_bvalid),
+     .MAXIGP1BVALID(slave1_bvalid && RST_N),
      .MAXIGP1RDATA(slave1_rdata),
      .MAXIGP1RID(slave1_rid),
      .MAXIGP1RLAST(slave1_rlast),
      .MAXIGP1RRESP(slave1_rresp),
-     .MAXIGP1RVALID(slave1_rvalid),
-     .MAXIGP1WREADY(slave1_wready),
-     .SAXIACPACLK(),
-     .SAXIACPARADDR(),
-     .SAXIACPARBURST(),
-     .SAXIACPARCACHE(),
-     .SAXIACPARID(),
-     .SAXIACPARLEN(),
-     .SAXIACPARLOCK(),
-     .SAXIACPARPROT(),
-     .SAXIACPARQOS(),
-     .SAXIACPARSIZE(),
-     .SAXIACPARUSER(),
-     .SAXIACPARVALID(),
-     .SAXIACPAWADDR(),
-     .SAXIACPAWBURST(),
-     .SAXIACPAWCACHE(),
-     .SAXIACPAWID(),
-     .SAXIACPAWLEN(),
-     .SAXIACPAWLOCK(),
-     .SAXIACPAWPROT(),
-     .SAXIACPAWQOS(),
-     .SAXIACPAWSIZE(),
-     .SAXIACPAWUSER(),
-     .SAXIACPAWVALID(),
-     .SAXIACPBREADY(),
-     .SAXIACPRREADY(),
-     .SAXIACPWDATA(),
-     .SAXIACPWID(),
-     .SAXIACPWLAST(),
-     .SAXIACPWSTRB(),
-     .SAXIACPWVALID(),
+     .MAXIGP1RVALID(slave1_rvalid && RST_N),
+     .MAXIGP1WREADY(slave1_wready && RST_N),
+     .SAXIACPACLK(clk),
+     .SAXIACPARADDR(master0_araddr),
+     .SAXIACPARBURST(master0_arburst),
+     .SAXIACPARCACHE(master0_arcache),
+     .SAXIACPARID(master0_arid),
+     .SAXIACPARLEN(master0_arlen),
+     .SAXIACPARLOCK(master0_arlock),
+     .SAXIACPARPROT(master0_arprot),
+     .SAXIACPARQOS(4'b1111),
+     .SAXIACPARSIZE(master0_arsize),
+     .SAXIACPARUSER(5'b1),
+     .SAXIACPARVALID(master0_arvalid && RST_N),
+     .SAXIACPAWADDR(master0_awaddr),
+     .SAXIACPAWBURST(master0_awburst),
+     .SAXIACPAWCACHE(master0_awcache),
+     .SAXIACPAWID(master0_awid),
+     .SAXIACPAWLEN(master0_awlen),
+     .SAXIACPAWLOCK(master0_awlock),
+     .SAXIACPAWPROT(master0_awprot),
+     .SAXIACPAWQOS(4'b1111),
+     .SAXIACPAWSIZE(master0_awsize),
+     .SAXIACPAWUSER(5'b1),
+     .SAXIACPAWVALID(master0_awvalid && RST_N),
+     .SAXIACPBREADY(master0_bready && RST_N),
+     .SAXIACPRREADY(master0_rready && RST_N),
+     .SAXIACPWDATA(master0_wdata),
+     .SAXIACPWID(master0_wid),
+     .SAXIACPWLAST(master0_wlast),
+     .SAXIACPWSTRB(master0_wstrb),
+     .SAXIACPWVALID(master0_wvalid && RST_N),
      .SAXIGP0ACLK(),
      .SAXIGP0ARADDR(),
      .SAXIGP0ARBURST(),
@@ -907,6 +886,6 @@ module red_pitaya (
      .SAXIHP3WRISSUECAP1EN(),
      .SAXIHP3WSTRB(),
      .SAXIHP3WVALID()
- );
+  );
 endmodule
 

@@ -13,28 +13,46 @@ int main()
   int fd, i;
   volatile uint8_t *rst;
   volatile void *cfg;
-  volatile int16_t *ram;
+  volatile void *ram;
   uint32_t size;
   int16_t value[2];
 
   printf("open /dev/mem\n");
-  if((fd = open("/dev/mem", O_RDWR)) < 0)
+  if((fd = open("/dev/mem", O_RDWR)) < 0) // |O_SYNC
   {
     perror("open");
     return EXIT_FAILURE;
   }
 
   cfg = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0x40000000);
+  ram = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0x1000000);
 
   close(fd);
 
   uint32_t buffer[100];
   for (i=0; i < 100; i++) {
-    buffer[i] = *(uint32_t*)cfg;
+    buffer[i] = *(uint32_t *volatile)(cfg + 4 * i);
+  }
+
+  printf("read from FPGA:\n");
+  for (i=0; i < 100; i = i + 1) {
+    printf("value: %x\n", buffer[i]);
+  }
+
+  uint32_t *volatile region_addr = (uint32_t *volatile) (cfg+0);
+  uint32_t *volatile region_size = (uint32_t *volatile) (cfg+4);
+
+  // Give the address and size of the coherent DMA buffer to the FPGA
+  *region_size = 0x180000;
+  *region_addr = 0x1000000;
+
+  printf("read from RAM\n");
+  for (i=0; i < 100; i++) {
+    buffer[i] = *(uint32_t *volatile)(ram + 4 * i);
   }
 
   for (i=0; i < 100; i = i + 1) {
-    printf("value: %d\n", buffer[i]);
+    printf("value: %x\n", buffer[i]);
   }
 
   //printf("open /dev/cma\n");
